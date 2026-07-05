@@ -1,6 +1,6 @@
 /* ═══════════════════════════════════════════════════════════
-   GUSERA · SATS — Self-Learning Machine (web port)
-   Port dari Pine Script v1.0.0 "Self-Learning Machine [GUSERA]"
+   GUSERA · SATS — Self-Aware Trend System (web port)
+   Port dari Pine Script v6 "Self-Aware Trend System [GUSERA]"
    Semua komputasi berjalan client-side di browser.
    ═══════════════════════════════════════════════════════════ */
 
@@ -422,7 +422,19 @@ function rma(arr, len){ // Wilder smoothing
   const out=new Array(arr.length).fill(NaN);
   let sum=0;
   for(let i=0;i<arr.length;i++){
-    if(i<len){ sum+=arr[i]; out[i] = i===len-1 ? sum/len : (i===0?arr[0]:out[i-1]); }
+    if(i<len){
+      sum+=arr[i];
+      // BUG FIX: bars before the first full `len`-sized window used to be flat-filled with
+      // arr[0] repeated (out[i] = out[i-1], seeded from arr[0]) instead of reflecting the data
+      // seen so far. For ATR specifically this meant the warm-up bars (indices 0..len-2) all
+      // reported the FIRST bar's true range, often far from representative — understating or
+      // overstating volatility for whichever historical bars happened to land in that window
+      // on a given fetch, which feeds directly into band width, SL distance, and entry scoring.
+      // Using the running average of data seen so far (a partial SMA) is a much closer estimate
+      // of the eventual seed value than an arbitrary single-sample flat line, while still
+      // avoiding NaN propagation downstream.
+      out[i] = i===len-1 ? sum/len : sum/(i+1);
+    }
     else{ out[i] = (out[i-1]*(len-1) + arr[i]) / len; }
   }
   return out;
@@ -657,8 +669,14 @@ function computeEngine(candles, cfg){
     const rsiWindow = rsiVals.slice(lb,i+1);
     const rsiDepth = isBuy ? Math.max(0, 30-Math.min(...rsiWindow)) : Math.max(0, Math.max(...rsiWindow)-70);
     const rsiScore = mapClamp(rsiDepth,0,15,0,17);
-    const pivDist = isBuy && lastPivL!=null ? Math.abs(closes[i]-lastPivL) : (!isBuy && lastPivH!=null ? Math.abs(lastPivH-closes[i]) : 0);
-    const structScore = mapClampInv(safeDiv(pivDist,effAtr[i],0),0,1.5,16,6);
+    // BUG FIX: when no pivot has been found yet (very first bars of a fetch window, before the
+    // pivot lookback/lookforward has had a chance to confirm one), pivDist used to default to 0
+    // ("distance to nearest pivot is zero"), which mapClampInv then read as the BEST possible
+    // structure score (16/16) — i.e. missing data was silently treated as the strongest possible
+    // evidence instead of "unknown". Now those bars fall back to a neutral mid-range score.
+    const havePivot = (isBuy && lastPivL!=null) || (!isBuy && lastPivH!=null);
+    const pivDist = isBuy && lastPivL!=null ? Math.abs(closes[i]-lastPivL) : (!isBuy && lastPivH!=null ? Math.abs(lastPivH-closes[i]) : null);
+    const structScore = havePivot ? mapClampInv(safeDiv(pivDist,effAtr[i],0),0,1.5,16,6) : 11; // neutral (~mid of 6-16 range)
     const breakDepth = isBuy ? Math.max(0, upperBand[i-1]-closes[i-1]) : Math.max(0, closes[i-1]-lowerBand[i-1]);
     const breakScore = mapClamp(safeDiv(breakDepth,effAtr[i],0),0,1.0,0,16);
     // Chart pattern confluence: candle pattern di bar sinyal (atau 1 bar sebelumnya, untuk
@@ -802,13 +820,24 @@ function computeEngine(candles, cfg){
       const dir = pendingSignal.dir;
       const confirmed = dir===1 ? isBullishCandle(i) : isBearishCandle(i);
       const trendStillAligned = stTrend[i]===dir;
-      if(confirmed && trendStillAligned && (dir===1 ? tradeDir<=0 : tradeDir>=0)){
+      // BUG FIX: the SL level (pendingSignal.tSl) is locked in at the FLIP bar, but the actual
+      // entry price is the CONFIRMATION bar's close, one bar later. On a fast/gappy move during
+      // that single bar, price can already be beyond the pre-computed SL by the time the
+      // confirmation bar closes — e.g. a BUY confirmation bar closing below tSl. Previously this
+      // was not checked, so openTrade() could receive a non-positive risk (entryPrice-tSl <= 0
+      // for BUY, or tSl-entryPrice <= 0 for SELL), which inverts/degenerates TP1-3 (e.g. take-profit
+      // levels landing below entry on a BUY) and silently poisons the trade log & self-learning
+      // stats. Treat this exactly like a failed confirmation: skip the trade instead of opening
+      // a structurally broken one.
+      const confirmEntryPrice = closes[i];
+      const riskOk = dir===1 ? (confirmEntryPrice - pendingSignal.tSl) > 0 : (pendingSignal.tSl - confirmEntryPrice) > 0;
+      if(confirmed && trendStillAligned && riskOk && (dir===1 ? tradeDir<=0 : tradeDir>=0)){
         openTrade(dir, i, pendingSignal.sb, pendingSignal.tSl, pendingSignal.flipIdx);
       } else {
         skippedSignals.push({i:pendingSignal.flipIdx, time:candles[pendingSignal.flipIdx].time, side:dir===1?'BUY':'SELL',
           price:closes[pendingSignal.flipIdx], score:pendingSignal.sb.total, tqi:tqi[pendingSignal.flipIdx],
           pattern: pendingSignal.sb.patternNames.join(' + ') || null, status:'SKIPPED', valid:false,
-          hypotheticalR:null, reason:'NO_CONFIRMATION'});
+          hypotheticalR:null, reason: (confirmed && trendStillAligned && !riskOk) ? 'INVALID_RISK' : 'NO_CONFIRMATION'});
       }
       pendingSignal = null;
     }
@@ -922,6 +951,18 @@ function computeEngine(candles, cfg){
     const votes = [];
     if(structDirArr[i]) votes.push({ name:'struct', dir: structDirArr[i], weight: cfg.structWeight||1 });
     if(momDirArr[i]) votes.push({ name:'mom', dir: momDirArr[i], weight: cfg.momWeight||1 });
+    // BUG FIX: cfg.patternWeight was computed every cycle by computeTrendWeights() (learned
+    // from realized-R of past trades with/without a supporting chart/candlestick pattern) but
+    // was never actually consulted anywhere in the engine — the Status Trend voting model only
+    // ever looked at struct/momentum, so the "learned" pattern weight was dead code. Here we
+    // detect a directional candlestick/structure pattern on the current bar (bull vs bear,
+    // reusing the same detector functions the entry-scoring path already uses) and, if the
+    // evidence points cleanly to one side (not both/conflicting), add it as a third vote using
+    // the learned weight — same pattern as struct/mom above.
+    const bullPat = detectCandlePattern(i,true) || detectCandlePattern(i-1,true) || detectStructurePattern(i,true);
+    const bearPat = detectCandlePattern(i,false) || detectCandlePattern(i-1,false) || detectStructurePattern(i,false);
+    if(bullPat && !bearPat) votes.push({ name:'pattern', dir:1, weight: cfg.patternWeight||1 });
+    else if(bearPat && !bullPat) votes.push({ name:'pattern', dir:-1, weight: cfg.patternWeight||1 });
     return votes;
   }
   function composeTrendStatus(i, fallbackDir){
@@ -1338,7 +1379,7 @@ function renderAll(res, candles){
       slConfFill.style.width = pct+'%';
       slConfFill.className = 'factor-fill '+(pct>=60?'fill-green':pct>=35?'fill-yellow':'fill-orange');
     }
-    const nameMap = {struct:'Struktur Harga', mom:'Momentum'};
+    const nameMap = {struct:'Struktur Harga', mom:'Momentum', pattern:'Pola Chart/Candlestick'};
     const voteParts = ts.votes.map(v=>`${nameMap[v.name]||v.name} ${v.dir>0?'bullish':'bearish'} (${v.weight.toFixed(2)}×)`);
     const tqiPct = Math.round(clamp(ts.tqiQuality,0,1)*100);
     if(slVotesMsg){
@@ -1552,6 +1593,16 @@ function historyRows(res){
   return { rows: [...open.slice().reverse(), ...closed], openCount: open.length, closedAllCount: closedAll.length };
 }
 
+// SECURITY FIX: s.time (and, defensively, s.side/s.pattern/s.status) can ultimately trace back
+// to user-pasted CSV text in Mode CSV (the `time` column is stored verbatim from the pasted
+// text with no sanitization). renderLog() interpolates these fields directly into innerHTML,
+// so a pasted CSV row like `<img src=x onerror=alert(1)>,...` would execute as HTML/script —
+// and since closed signals are persisted to localStorage and re-rendered on every future load,
+// the injection would survive across sessions. Escape every field before interpolation.
+function escapeHtml(v){
+  return String(v).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
+
 function renderLog(res){
   const body = document.getElementById('logBody');
   const { rows, openCount, closedAllCount } = historyRows(res);
@@ -1562,16 +1613,20 @@ function renderLog(res){
     const rCls = s.realizedR!=null ? (s.realizedR>=0?'pos':'neg') : '';
     const validTxt = s.valid===false ? 'Lemah' : 'Valid';
     const validCls = s.valid===false ? 'neg' : 'pos';
+    const timeSafe = escapeHtml(s.time);
+    const sideSafe = escapeHtml(s.side);
+    const patternSafe = s.pattern ? escapeHtml(s.pattern) : '—';
+    const statusSafe = escapeHtml(s.status);
     return `
 <tr>
 
     <td data-label="Waktu">
-        ${s.time}
+        ${timeSafe}
     </td>
 
     <td data-label="Sisi">
         <span class="sideBadge ${s.side === 'BUY' ? 'buy' : 'sell'}">
-            ${s.side}
+            ${sideSafe}
         </span>
     </td>
 
@@ -1592,7 +1647,7 @@ function renderLog(res){
     </td>
 
     <td data-label="Pola">
-        ${s.pattern ? s.pattern : '—'}
+        ${patternSafe}
     </td>
 
     <td data-label="SL">
@@ -1615,7 +1670,7 @@ function renderLog(res){
     </td>
 
     <td data-label="Status">
-        ${s.status}
+        ${statusSafe}
     </td>
 
     <td
