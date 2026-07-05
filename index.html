@@ -60,25 +60,29 @@
 
     <div class="header-row header-controls">
 
-        <select id="symbolSel" class="select">
-            <option value="XAU/USD">XAU/USD</option>
-            <option value="BTC/USD">BTC/USD</option>
-        </select>
+        <div class="control-selects">
+            <select id="symbolSel" class="select">
+                <option value="XAU/USD">XAU/USD</option>
+                <option value="BTC/USD">BTC/USD</option>
+            </select>
 
-        <select id="tfSel" class="select">
-            <option value="1min">M1</option>
-            <option value="5min">M5</option>
-            <option value="15min" selected>M15</option>
-            <option value="30min">M30</option>
-            <option value="1h">H1</option>
-            <option value="4h">H4</option>
-            <option value="1day">D1</option>
-        </select>
+            <select id="tfSel" class="select">
+                <option value="1min">M1</option>
+                <option value="5min">M5</option>
+                <option value="15min" selected>M15</option>
+                <option value="30min">M30</option>
+                <option value="1h">H1</option>
+                <option value="4h">H4</option>
+                <option value="1day">D1</option>
+            </select>
+        </div>
 
-        <button id="startBtn" class="btn btn-primary"><span class="btn-play">▶</span> Mulai</button>
-        <button id="settingsBtn" class="btn btn-icon" aria-label="Pengaturan">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-        </button>
+        <div class="control-actions">
+            <button id="startBtn" class="btn btn-primary"><span class="btn-play">▶</span> Mulai</button>
+            <button id="settingsBtn" class="btn btn-icon" aria-label="Pengaturan">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            </button>
+        </div>
 
     </div>
 
@@ -113,36 +117,49 @@
     </section>
 
     <!-- TREND -->
-    <section class="card" data-view="analisis">
+    <section class="card card-wide trend-card" data-view="analisis">
         <div class="card-header">
             <h3 class="card-title">Status Trend</h3>
             <span class="trendTag" id="trendTag">—</span>
         </div>
-        <div class="card-body">
-            <div class="info-row">
-                <span class="info-label"><span class="icon-badge icon-engine"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="15" x2="23" y2="15"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="15" x2="4" y2="15"/></svg></span>Confidence Self-Learning</span>
-                <span class="trendTag" id="slConfTag">—</span>
+        <div class="card-body trend-grid">
+
+            <div class="trend-block">
+                <div class="info-row">
+                    <span class="info-label"><span class="icon-badge icon-engine"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="15" x2="23" y2="15"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="15" x2="4" y2="15"/></svg></span>Confidence Self-Learning</span>
+                    <span class="trendTag" id="slConfTag">—</span>
+                </div>
+                <div class="factor" style="margin:2px 0 12px;">
+                    <div class="factor-track"><span class="factor-fill fill-green" id="slConfFill"></span></div>
+                </div>
+                <p class="statusMsg show" id="slVotesMsg" style="margin-top:0 0 10px;"></p>
             </div>
-            <div class="factor" style="margin:2px 0 12px;">
-                <div class="factor-track"><span class="factor-fill fill-green" id="slConfFill"></span></div>
+
+            <div class="trend-block">
+                <div class="info-row">
+                    <span class="info-label"><span class="icon-badge icon-engine"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="15" x2="23" y2="15"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="15" x2="4" y2="15"/></svg></span>Trend Quality Index (Self-Learning)</span>
+                    <span class="trendTag" id="tqiSlTag">—</span>
+                </div>
+                <div class="factor" style="margin:2px 0 12px;">
+                    <div class="factor-track"><span class="factor-fill fill-green" id="tqiSlFill"></span></div>
+                </div>
+                <p class="statusMsg show" id="tqiSlMsg" style="margin-top:0 0 10px;"></p>
             </div>
-            <p class="statusMsg show" id="slVotesMsg" style="margin-top:0 0 10px;"></p>
-            <div class="info-row">
-                <span class="info-label"><span class="icon-badge icon-engine"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="15" x2="23" y2="15"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="15" x2="4" y2="15"/></svg></span>Trend Quality Index (Self-Learning)</span>
-                <span class="trendTag" id="tqiSlTag">—</span>
+
+            <div class="trend-block">
+                <div class="info-row">
+                    <span class="info-label"><span class="icon-badge icon-pattern"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></span>Konfirmasi Candlestick</span>
+                    <span class="trendTag" id="confirmTag">—</span>
+                </div>
             </div>
-            <div class="factor" style="margin:2px 0 12px;">
-                <div class="factor-track"><span class="factor-fill fill-green" id="tqiSlFill"></span></div>
+
+            <div class="trend-block">
+                <div class="info-row">
+                    <span class="info-label"><span class="icon-badge icon-engine"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="15" x2="23" y2="15"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="15" x2="4" y2="15"/></svg></span>Engine</span>
+                    <span class="trendTag" id="engineTag">—</span>
+                </div>
             </div>
-            <p class="statusMsg show" id="tqiSlMsg" style="margin-top:0 0 10px;"></p>
-            <div class="info-row">
-                <span class="info-label"><span class="icon-badge icon-pattern"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></span>Konfirmasi Candlestick</span>
-                <span class="trendTag" id="confirmTag">—</span>
-            </div>
-            <div class="info-row">
-                <span class="info-label"><span class="icon-badge icon-engine"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="15" x2="23" y2="15"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="15" x2="4" y2="15"/></svg></span>Engine</span>
-                <span class="trendTag" id="engineTag">—</span>
-            </div>
+
             <p class="statusMsg" id="statusMsg"></p>
 
         </div>
@@ -344,7 +361,7 @@
     </section>
 
     <!-- STATS -->
-    <section class="card" data-view="sinyal">
+    <section class="card card-wide stats-card" data-view="sinyal">
         <div class="card-header">
             <h3 class="card-title">Statistik Performa</h3>
         </div>
