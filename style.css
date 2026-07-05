@@ -139,7 +139,10 @@ button{ cursor:pointer; border:none; background:none; }
 
 @keyframes pulse{ 0%,100%{opacity:1;} 50%{opacity:.45;} }
 
-.header-controls{ display:grid; grid-template-columns:1fr 1fr auto auto; gap:8px; }
+.header-controls{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.control-selects{ display:flex; gap:8px; flex:1 1 auto; min-width:0; }
+.control-selects .select{ flex:1 1 0; min-width:0; }
+.control-actions{ display:flex; align-items:center; gap:8px; flex:none; }
 
 .select{
   width:100%;
@@ -709,9 +712,27 @@ input[type="range"]{ width:100%; accent-color:var(--gold); }
 
 @media (min-width:600px){
   .app-main{ grid-template-columns:repeat(2,1fr); }
-  .header-controls{ grid-template-columns:auto auto auto auto; justify-content:flex-start; }
+
+  /* header: selects stay left, Mulai + gear align right, under the Live/bell pill above */
+  .header-controls{ justify-content:space-between; }
+  .control-selects{ flex:none; }
   .select{ width:auto; min-width:120px; }
+
   .chart-wrap{ height:300px; }
+
+  /* Status Trend: arrange the four info blocks in a 2x2 grid so the
+     card (now full-width) doesn't leave a big empty gap beside it */
+  .trend-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    column-gap:32px;
+    row-gap:0;
+    align-items:start;
+  }
+  .trend-grid > .statusMsg{ grid-column:1 / -1; }
+
+  /* Statistik Performa: use the full card width instead of a cramped 2-col grid */
+  .stats-card .stat-grid{ grid-template-columns:repeat(4,1fr); }
 }
 
 @media (min-width:960px){
