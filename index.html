@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+
+<title>GUSERA LTD</title>
+
+<meta name="description" content="Self Aware Trend System untuk analisis XAU/USD &amp; BTC/USD real-time">
+<meta name="theme-color" content="#090B10">
+<meta name="color-scheme" content="dark">
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="GUSERA LTD">
+
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="style.css">
+
+</head>
+<body>
+
+<div class="app-shell">
+
+<!-- =====================================================
+     HEADER
+====================================================== -->
+<header class="app-header">
+
+    <div class="header-row">
+
+        <div class="brand">
+            <img src="logo-header.png" class="brand-logo" alt="GUSERA">
+            <div class="brand-text">
+                <h1>GUSERA LTD</h1>
+                <p>Self-Learning Machine</p>
+            </div>
+        </div>
+
+        <div class="header-right">
+            <div class="connection-pill" id="connectionStatus">
+                <span class="dot" id="connDot"></span>
+                <span id="connText">Offline</span>
+            </div>
+            <button class="bell-btn" aria-label="Notifikasi" type="button">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                <span class="bell-badge" id="bellBadge"></span>
+            </button>
+        </div>
+
+    </div>
+
+    <div class="header-row header-controls">
+
+        <select id="symbolSel" class="select">
+            <option value="XAU/USD">XAU/USD</option>
+            <option value="BTC/USD">BTC/USD</option>
+        </select>
+
+        <select id="tfSel" class="select">
+            <option value="1min">M1</option>
+            <option value="5min">M5</option>
+            <option value="15min" selected>M15</option>
+            <option value="30min">M30</option>
+            <option value="1h">H1</option>
+            <option value="4h">H4</option>
+            <option value="1day">D1</option>
+        </select>
+
+        <button id="startBtn" class="btn btn-primary"><span class="btn-play">▶</span> Mulai</button>
+        <button id="settingsBtn" class="btn btn-icon" aria-label="Pengaturan">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </button>
+
+    </div>
+
+    <div class="broker-pill">
+        <span>Broker</span>
+        <b id="brokerStatus">PAPER</b>
+    </div>
+
+</header>
+
+<!-- =====================================================
+     MAIN DASHBOARD
+====================================================== -->
+<main class="app-main">
+
+    <!-- PRICE -->
+    <section class="card card-wide price-card" data-view="dashboard">
+        <div class="card-header">
+            <h3 class="card-title" id="priceCardTitle">Harga XAU/USD</h3>
+            <span class="live-chip"><span class="live-dot" aria-hidden="true"></span>Live</span>
+        </div>
+        <div class="card-body price-card-body">
+            <div class="price-info">
+                <div class="priceNow" id="priceNow">—</div>
+                <div class="price-change" id="priceChange"></div>
+                <div class="price-sub" id="priceSub">Klik Mulai untuk memuat data</div>
+            </div>
+            <div class="spark-wrap" id="sparkWrap">
+                <canvas id="sparkCanvas"></canvas>
+            </div>
+        </div>
+    </section>
+
+    <!-- TREND -->
+    <section class="card" data-view="analisis">
+        <div class="card-header">
+            <h3 class="card-title">Status Trend</h3>
+            <span class="trendTag" id="trendTag">—</span>
+        </div>
+        <div class="card-body">
+            <div class="info-row">
+                <span class="info-label"><span class="icon-badge icon-engine"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="15" x2="23" y2="15"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="15" x2="4" y2="15"/></svg></span>Confidence Self-Learning</span>
+                <span class="trendTag" id="slConfTag">—</span>
+            </div>
+            <div class="factor" style="margin:2px 0 12px;">
+                <div class="factor-track"><span class="factor-fill fill-green" id="slConfFill"></span></div>
+            </div>
+            <p class="statusMsg show" id="slVotesMsg" style="margin-top:0 0 10px;"></p>
+            <div class="info-row">
+                <span class="info-label"><span class="icon-badge icon-engine"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="15" x2="23" y2="15"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="15" x2="4" y2="15"/></svg></span>Trend Quality Index (Self-Learning)</span>
+                <span class="trendTag" id="tqiSlTag">—</span>
+            </div>
+            <div class="factor" style="margin:2px 0 12px;">
+                <div class="factor-track"><span class="factor-fill fill-green" id="tqiSlFill"></span></div>
+            </div>
+            <p class="statusMsg show" id="tqiSlMsg" style="margin-top:0 0 10px;"></p>
+            <div class="info-row">
+                <span class="info-label"><span class="icon-badge icon-pattern"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></span>Konfirmasi Candlestick</span>
+                <span class="trendTag" id="confirmTag">—</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label"><span class="icon-badge icon-engine"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="15" x2="23" y2="15"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="15" x2="4" y2="15"/></svg></span>Engine</span>
+                <span class="trendTag" id="engineTag">—</span>
+            </div>
+            <p class="statusMsg" id="statusMsg"></p>
+
+        </div>
+    </section>
+
+    <!-- TQI -->
+    <section class="card card-wide" data-view="dashboard">
+        <div class="card-header">
+            <h3 class="card-title">Trend Quality Index</h3>
+            <span class="chip" id="tqiRegime">—</span>
+        </div>
+        <div class="card-body tqi-body">
+
+            <div class="gauge-col">
+                <div class="gauge-wrap">
+                    <canvas id="gaugeCanvas" width="200" height="200"></canvas>
+                    <div class="gauge-value"><span id="tqiVal">—</span><small>/100</small></div>
+                </div>
+                <div class="gauge-caption">Kualitas Trend</div>
+            </div>
+
+            <div class="tqi-right">
+
+                <p class="tqi-desc" id="tqiDesc">Menunggu Analisis Trend…</p>
+
+                <div class="factor-list">
+
+                    <div class="factor">
+                        <div class="factor-head"><span>Trend Strength</span><span id="fErV">—</span></div>
+                        <div class="factor-track"><span class="factor-fill fill-green" id="fEr"></span></div>
+                    </div>
+
+                    <div class="factor">
+                        <div class="factor-head"><span>Structure</span><span id="fStructV">—</span></div>
+                        <div class="factor-track"><span class="factor-fill fill-yellow" id="fStruct"></span></div>
+                    </div>
+
+                    <div class="factor">
+                        <div class="factor-head"><span>Momentum</span><span id="fMomV">—</span></div>
+                        <div class="factor-track"><span class="factor-fill fill-orange" id="fMom"></span></div>
+                    </div>
+
+                    <div class="factor">
+                        <div class="factor-head"><span>Consistency</span><span id="fVolV">—</span></div>
+                        <div class="factor-track"><span class="factor-fill fill-teal" id="fVol"></span></div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+    </section>
+
+    <!-- AI INSIGHT -->
+    <section class="card card-wide ai-card" data-view="dashboard">
+        <div class="card-header ai-card-header">
+            <div class="ai-header-left">
+                <span class="ai-brain-badge">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2a3 3 0 0 0-3 3v.2A3.5 3.5 0 0 0 4 8.5V9a3 3 0 0 0-1 5.83V16a3 3 0 0 0 3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3V5a3 3 0 0 0-2.5-3z"/><path d="M14.5 2a3 3 0 0 1 3 3v.2A3.5 3.5 0 0 1 20 8.5V9a3 3 0 0 1 1 5.83V16a3 3 0 0 1-3 3 3 3 0 0 1-3 3 3 3 0 0 1-3-3V5a3 3 0 0 1 2.5-3z"/><line x1="12" y1="5" x2="12" y2="19"/></svg>
+                </span>
+                <div>
+                    <h3 class="card-title">AI Insight Engine</h3>
+                    <p class="ai-subtitle">Analisis cerdas berbasis data &amp; algoritma</p>
+                </div>
+            </div>
+            <span class="chip chip-active ai-active-chip" id="aiActiveChip"><span class="live-dot"></span>ACTIVE</span>
+        </div>
+        <div class="card-body">
+            <div class="ai-confidence-panel">
+                <div class="ai-confidence-col">
+                    <span class="ai-panel-label">Confidence</span>
+                    <div class="ai-confidence-value" id="aiConfidence">—</div>
+                    <div class="ai-confidence-track"><span class="ai-confidence-fill" id="aiConfidenceFill" style="width:0%"></span></div>
+                </div>
+                <div class="ai-panel-divider"></div>
+                <div class="ai-confidence-desc">
+                    <span class="ai-trend-icon" id="aiTrendIcon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="17" y1="17" x2="7" y2="7"/><polyline points="8 7 17 7 17 16"/></svg>
+                    </span>
+                    <div class="ai-desc-text">
+                        <p class="ai-insight-headline" id="aiInsightHeadline">Menunggu Analisis AI…</p>
+                        <p class="ai-insight-text" id="aiInsightText"></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ai-tags-grid">
+                <div class="ai-tag-card ai-tag-bias" id="aiBiasCard">
+                    <span class="ai-tag-icon" id="aiBiasIcon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 10c-2 0-3-2-2-4 1-1 2-1 2 0 0-2 2-3 4-3s4 1 4 3c0-1 1-1 2 0 1 2 0 4-2 4"/><path d="M8 10c0 3 1.5 5 4 5s4-2 4-5"/><path d="M9 19c0-1.5.5-2.5 1.2-3M15 19c0-1.5-.5-2.5-1.2-3"/><circle cx="10" cy="12.5" r=".6" fill="currentColor" stroke="none"/><circle cx="14" cy="12.5" r=".6" fill="currentColor" stroke="none"/></svg>
+                    </span>
+                    <span class="ai-tag-label">Bias</span>
+                    <span class="ai-tag-value" id="aiBias">—</span>
+                    <span class="ai-tag-caption" id="aiBiasCaption"><span class="ai-caption-dot"></span><span id="aiBiasCaptionText">—</span></span>
+                </div>
+                <div class="ai-tag-card ai-tag-risk" id="aiRiskCard">
+                    <span class="ai-tag-icon" id="aiRiskIcon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 12 7 12 9 6 13 18 15 12 22 12"/></svg>
+                    </span>
+                    <span class="ai-tag-label">Risk</span>
+                    <span class="ai-tag-value" id="aiRisk">—</span>
+                    <span class="ai-tag-caption" id="aiRiskCaption"><span class="ai-caption-dot"></span><span id="aiRiskCaptionText">—</span></span>
+                </div>
+                <div class="ai-tag-card ai-tag-regime" id="aiRegimeCard">
+                    <span class="ai-tag-icon" id="aiRegimeIcon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 3 21 7 17 11"/><path d="M3 7h18"/><polyline points="7 21 3 17 7 13"/><path d="M21 17H3"/></svg>
+                    </span>
+                    <span class="ai-tag-label">Regime</span>
+                    <span class="ai-tag-value" id="aiRegime">—</span>
+                    <span class="ai-tag-caption" id="aiRegimeCaption"><span class="ai-caption-dot"></span><span id="aiRegimeCaptionText">—</span></span>
+                </div>
+            </div>
+
+            <div class="ai-summary">
+                <span class="ai-summary-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a6 6 0 0 0-4 10.5c.7.6 1 1.3 1 2.1V15h6v-.4c0-.8.3-1.5 1-2.1A6 6 0 0 0 12 2z"/></svg>
+                </span>
+                <div class="ai-summary-body">
+                    <p class="ai-summary-title">Insight Summary</p>
+                    <p class="ai-summary-text" id="aiSummaryText">Menunggu cukup data untuk menghasilkan ringkasan insight.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- POSITION -->
+    <section class="card card-wide position-card" data-view="sinyal">
+        <div class="card-header position-header">
+            <span class="icon-badge icon-lg icon-ema"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></span>
+            <div class="position-title">
+                <h3 class="card-title">Posisi Aktif</h3>
+                <p class="position-sub">Ringkasan posisi trading Anda saat ini</p>
+            </div>
+            <span class="statusPill flat" id="posStatus">FLAT</span>
+        </div>
+        <div class="card-body">
+            <div class="pos-grid">
+
+                <div class="pos-box">
+                    <div class="pos-box-text">
+                        <span class="k">Entry</span>
+                        <span class="v" id="tEntry">—</span>
+                    </div>
+                    <span class="icon-badge icon-ema"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg></span>
+                </div>
+
+                <div class="pos-box">
+                    <div class="pos-box-text">
+                        <span class="k">SL (Stop Loss)</span>
+                        <span class="v neg" id="tSl">—</span>
+                    </div>
+                    <span class="icon-badge icon-sl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M12 8v4"/><path d="M9.5 10.5 12 12l2.5-1.5"/></svg></span>
+                </div>
+
+                <div class="pos-box">
+                    <div class="pos-box-text">
+                        <span class="k">TP1 (Take Profit 1)</span>
+                        <span class="v" id="tTp1">—</span>
+                    </div>
+                    <span class="icon-badge icon-ema"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></span>
+                </div>
+
+                <div class="pos-box">
+                    <div class="pos-box-text">
+                        <span class="k">TP2 (Take Profit 2)</span>
+                        <span class="v" id="tTp2">—</span>
+                    </div>
+                    <span class="icon-badge icon-ema"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></span>
+                </div>
+
+                <div class="pos-box">
+                    <div class="pos-box-text">
+                        <span class="k">TP3 (Take Profit 3)</span>
+                        <span class="v" id="tTp3">—</span>
+                    </div>
+                    <span class="icon-badge icon-ema"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></span>
+                </div>
+
+                <div class="pos-box">
+                    <div class="pos-box-text">
+                        <span class="k">Mode</span>
+                        <span class="v plain" id="tMode">—</span>
+                    </div>
+                    <span class="icon-badge icon-pattern"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></span>
+                </div>
+
+                <div class="pos-box pos-box-wide">
+                    <div class="pos-box-text">
+                        <span class="k">Score</span>
+                        <span class="v score-v"><span id="tScore">—</span><small id="tScoreMax"></small></span>
+                    </div>
+                    <div class="score-track"><span class="score-fill" id="tScoreFill"></span></div>
+                    <span class="icon-badge icon-ema"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- STATS -->
+    <section class="card" data-view="sinyal">
+        <div class="card-header">
+            <h3 class="card-title">Statistik Performa</h3>
+        </div>
+        <div class="card-body">
+            <div class="stat-grid">
+                <div class="stat"><span class="stat-label">Win Rate</span><span class="v" id="sWinRate">—</span></div>
+                <div class="stat"><span class="stat-label">Avg R</span><span class="v" id="sAvgR">—</span></div>
+                <div class="stat"><span class="stat-label">Total</span><span class="v" id="sCount">—</span></div>
+                <div class="stat"><span class="stat-label">Streak</span><span class="v" id="sStreak">—</span></div>
+                <div class="stat"><span class="stat-label">WR Tersimpan</span><span class="v" id="sPersistedWR">—</span></div>
+                <div class="stat"><span class="stat-label">Ambang Skor</span><span class="v" id="sThreshold">—</span></div>
+                <div class="stat"><span class="stat-label">Sinyal Terlewat</span><span class="v" id="sSkippedCount">—</span></div>
+                <div class="stat"><span class="stat-label">Avg-R Terlewat</span><span class="v" id="sSkippedAvgR">—</span></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CHART -->
+    <section class="card card-wide" data-view="analisis">
+        <div class="card-header">
+            <h3 class="card-title">Chart Harga</h3>
+        </div>
+        <div class="card-body">
+            <div class="chart-wrap" id="chartWrap">
+                <canvas id="chartCanvas"></canvas>
+            </div>
+        </div>
+    </section>
+
+    <!-- SIGNAL LOG -->
+    <section class="card card-wide" data-view="riwayat">
+        <div class="card-header">
+            <h3 class="card-title">Riwayat Sinyal</h3>
+            <span class="log-count" id="logCount">0 sinyal</span>
+        </div>
+        <div class="card-body log-body">
+
+            <div class="log-actions">
+                <button id="downloadHistoryBtn" class="btn btn-secondary btn-sm">⬇ Ekspor CSV</button>
+                <button id="resetBtn" class="btn btn-danger btn-sm">Reset</button>
+            </div>
+
+            <div class="log-table-wrap">
+                <table class="log-table">
+                    <thead>
+                        <tr>
+                            <th>Waktu</th><th>Sisi</th><th>Kualitas</th><th>Harga</th><th>Skor</th><th>Purity</th><th>Pola</th>
+                            <th>SL</th><th>TP1</th><th>TP2</th><th>TP3</th><th>Status</th><th>R:R</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logBody"></tbody>
+                </table>
+                <p class="log-empty" id="logEmpty">Belum ada sinyal. Mulai engine untuk mulai merekam riwayat.</p>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- PROFIL: identitas & ringkasan akun -->
+    <section class="card card-wide profile-card" data-view="profil">
+        <div class="card-body profile-hero">
+            <img src="logo-header.png" class="profile-avatar" alt="GUSERA">
+            <div class="profile-hero-text">
+                <h3 class="profile-name">GUSERA LTD</h3>
+                <p class="position-sub">Self-Learning Machine</p>
+            </div>
+            <span class="chip chip-active" id="profVersionChip">v6.0</span>
+        </div>
+    </section>
+
+    <!-- PROFIL: ringkasan performa lintas sesi -->
+    <section class="card card-wide" data-view="profil">
+        <div class="card-header">
+            <h3 class="card-title">Ringkasan Performa</h3>
+            <span class="position-sub" id="profPairLabel">—</span>
+        </div>
+        <div class="card-body">
+            <div class="stat-grid">
+                <div class="stat"><span class="stat-label">Win Rate Tersimpan</span><span class="v" id="profWinRate">—</span></div>
+                <div class="stat"><span class="stat-label">Avg R Tersimpan</span><span class="v" id="profAvgR">—</span></div>
+                <div class="stat"><span class="stat-label">Total Trade Tersimpan</span><span class="v" id="profTotalTrades">—</span></div>
+                <div class="stat"><span class="stat-label">Rekor Beruntun</span><span class="v" id="profBestStreak">—</span></div>
+            </div>
+            <p class="position-sub profile-note">Dihitung dari riwayat sinyal tersimpan untuk pair &amp; timeframe yang sedang aktif.</p>
+        </div>
+    </section>
+
+    <!-- PROFIL: preferensi aktif -->
+    <section class="card card-wide" data-view="profil">
+        <div class="card-header">
+            <h3 class="card-title">Preferensi Aktif</h3>
+        </div>
+        <div class="card-body">
+            <div class="info-row">
+                <span class="info-label">Pair &amp; Timeframe</span>
+                <span class="trendTag" id="profSymbolTf">—</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Preset Strategi</span>
+                <span class="trendTag" id="profPreset">—</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Mode Take-Profit</span>
+                <span class="trendTag" id="profTpMode">—</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Sumber Data</span>
+                <span class="trendTag" id="profDataSource">—</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">API Key Aktif</span>
+                <span class="trendTag" id="profApiKeyStatus">—</span>
+            </div>
+            <button id="profOpenSettingsBtn" class="btn btn-secondary btn-sm profile-action">⚙ Buka Pengaturan</button>
+        </div>
+    </section>
+
+    <!-- PROFIL: manajemen data -->
+    <section class="card card-wide" data-view="profil">
+        <div class="card-header">
+            <h3 class="card-title">Data &amp; Privasi</h3>
+        </div>
+        <div class="card-body">
+            <p class="position-sub profile-note">Seluruh data (riwayat sinyal, pengaturan, API key pribadi jika diisi) tersimpan lokal di browser Anda melalui <code>localStorage</code> — tidak pernah dikirim ke server pihak manapun. 5 API key bawaan (auto-switch) sudah tertanam di kode aplikasi agar bisa langsung dipakai tanpa setup; untuk pemakaian rutin, disarankan mengisi API key pribadi Anda sendiri di ⚙ Pengaturan — key pribadi selalu dicoba lebih dulu sebelum pool bawaan.</p>
+            <div class="log-actions profile-action-row">
+                <button id="profExportBtn" class="btn btn-secondary btn-sm">⬇ Ekspor Riwayat CSV</button>
+                <button id="profResetHistoryBtn" class="btn btn-danger btn-sm">Hapus Riwayat Tersimpan</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- PROFIL: bantuan & disclaimer -->
+    <section class="card card-wide" data-view="profil">
+        <div class="card-header">
+            <h3 class="card-title">Bantuan &amp; Disclaimer</h3>
+        </div>
+        <div class="card-body">
+            <p class="position-sub profile-note">GUSERA LTD adalah alat bantu analisa teknikal, bukan nasihat keuangan dan bukan sistem eksekusi order otomatis ke broker manapun. Setiap sinyal wajib dikonfirmasi ulang secara mandiri sebelum entry. Trading XAU/USD, forex, dan crypto mengandung risiko kerugian modal yang signifikan. Data harga bersumber dari Twelve Data API dan dapat berbeda atau terlambat dibandingkan harga broker Anda.</p>
+        </div>
+    </section>
+
+</main>
+
+<!-- FOOTER -->
+<footer class="app-footer">
+    <div class="footer-inner">
+        <span>ZEP SABBATH © 2026</span>
+        <span>Client-side AI Trading System</span>
+    </div>
+</footer>
+
+</div>
+
+<!-- =====================================================
+     BOTTOM NAV
+====================================================== -->
+<nav class="bottom-nav" id="bottomNav">
+    <button class="nav-item active" data-nav="dashboard" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span>Dashboard</span>
+    </button>
+    <button class="nav-item" data-nav="analisis" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        <span>Analisis</span>
+    </button>
+    <button class="nav-item" data-nav="sinyal" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-8.49a6 6 0 0 0 0 8.49M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+        <span>Sinyal</span>
+    </button>
+    <button class="nav-item" data-nav="riwayat" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <span>Riwayat</span>
+    </button>
+    <button class="nav-item" data-nav="profil" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span>Profil</span>
+    </button>
+</nav>
+
+<!-- =====================================================
+     TOAST
+====================================================== -->
+<div class="toast" id="toast"></div>
+
+<!-- =====================================================
+     SETTINGS MODAL
+====================================================== -->
+<div class="overlay" id="overlay">
+    <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+
+        <div class="modal-header">
+            <h2 class="modal-title" id="modalTitle">⚙ Pengaturan</h2>
+            <button id="closeModalBtn" class="modal-close" aria-label="Tutup">✕</button>
+        </div>
+
+        <div class="modal-tabs" role="tablist">
+            <button class="tabBtn active" data-tab="data">Data Live</button>
+            <button class="tabBtn" data-tab="strategy">Strategi</button>
+            <button class="tabBtn" data-tab="alert">Alert</button>
+            <button class="tabBtn" data-tab="csv">Mode CSV</button>
+        </div>
+
+        <div class="modal-body">
+
+            <!-- DATA LIVE -->
+            <div class="tabPane active" data-pane="data">
+
+                <label class="field">
+                    <span class="field-label">Twelve Data API Key (opsional)</span>
+                    <input type="password" id="apiKeyInput" placeholder="Kosongkan untuk pakai 5 API key bawaan (auto-switch)" autocomplete="off">
+                    <p class="position-sub" id="apiKeyPoolStatus">—</p>
+                </label>
+
+                <label class="field">
+                    <span class="field-label">Interval Refresh</span>
+                    <select id="refreshSel" class="select">
+                        <option value="180000">3 menit</option>
+                        <option value="900000" selected>15 menit</option>
+                        <option value="3600000">1 jam</option>
+                    </select>
+                </label>
+
+                <label class="field">
+                    <span class="field-label">Jumlah Candle</span>
+                    <input type="number" id="outputSizeInput" min="100" max="500" step="50" value="300" inputmode="numeric">
+                </label>
+
+            </div>
+
+            <!-- STRATEGI -->
+            <div class="tabPane" data-pane="strategy">
+
+                <label class="field">
+                    <span class="field-label">Preset</span>
+                    <select id="presetSel" class="select">
+                        <option value="Auto">Auto</option>
+                        <option value="Scalping">Scalping</option>
+                        <option value="Default">Default</option>
+                        <option value="Swing">Swing</option>
+                        <option value="Custom" selected>Custom (ATR 21 · Band 4×ATR)</option>
+                    </select>
+                </label>
+
+                <label class="field">
+                    <span class="field-label">Mode TP</span>
+                    <select id="tpModeSel" class="select">
+                        <option value="Dynamic">Dynamic</option>
+                        <option value="Fixed" selected>Fixed (RR 1:2)</option>
+                    </select>
+                </label>
+
+                <label class="field">
+                    <span class="field-label">Quality Influence</span>
+                    <input type="range" id="qualityStrengthInput" min="0" max="1" step="0.1" value="0.4">
+                </label>
+
+                <div class="toggle-list">
+                    <label class="toggle"><input type="checkbox" id="asymToggle" checked><span>Asymmetric Bands</span></label>
+                    <label class="toggle"><input type="checkbox" id="charFlipToggle" checked><span>Character-Flip Detection</span></label>
+                    <label class="toggle"><input type="checkbox" id="effAtrToggle" checked><span>Efficiency-Weighted ATR</span></label>
+                    <label class="toggle"><input type="checkbox" id="breakevenToggle"><span>Breakeven Stop</span></label>
+                    <label class="toggle"><input type="checkbox" id="adaptiveThresholdToggle" checked><span>Ambang Skor Adaptif (Self-Learning)</span></label>
+                    <label class="toggle"><input type="checkbox" id="candleConfirmToggle" checked><span>Wajib Konfirmasi Candlestick Sebelum Entry</span></label>
+                </div>
+
+            </div>
+
+            <!-- ALERT -->
+            <div class="tabPane" data-pane="alert">
+                <div class="toggle-list">
+                    <label class="toggle"><input type="checkbox" id="notifToggle" checked><span>Notifikasi Browser</span></label>
+                    <label class="toggle"><input type="checkbox" id="soundToggle" checked><span>Bunyi Alert</span></label>
+                </div>
+                <label class="field">
+                    <span class="field-label">Riwayat Tersimpan (untuk Ambang Adaptif)</span>
+                    <button id="resetHistoryBtn" class="btn btn-secondary btn-sm" type="button">Reset Riwayat Tersimpan</button>
+                </label>
+            </div>
+
+            <!-- CSV -->
+            <div class="tabPane" data-pane="csv">
+                <label class="field">
+                    <span class="field-label">Data Candle (time,open,high,low,close,volume)</span>
+                    <textarea id="csvInput" rows="6" placeholder="2026-07-03 10:00:00,2330.10,2332.40,2329.50,2331.80,0"></textarea>
+                </label>
+                <button id="csvLoadBtn" class="btn btn-secondary">Muat CSV</button>
+            </div>
+
+        </div>
+
+        <p class="statusMsg" id="modalStatus"></p>
+
+        <div class="modal-footer">
+            <button id="saveStartBtn" class="btn btn-primary">Simpan &amp; Mulai</button>
+        </div>
+
+    </div>
+</div>
+
+<script src="app.js" defer></script>
+
+</body>
+</html>
