@@ -2,8 +2,8 @@
 
 <img src="logo-header.png" alt="GUSERA" width="140">
 
-# L M V 1.0.0
-### Self-Learning Machine V1.0.0
+# S A T S
+### Self-Aware Trend System
 
 **Terminal analisa trend adaptif yang berjalan 100% di browser — tanpa server, tanpa backend, tanpa instalasi.**
 
