@@ -716,6 +716,7 @@ input[type="range"]{ width:100%; accent-color:var(--gold); }
   /* header: selects stay left, Mulai + gear align right, under the Live/bell pill above */
   .header-controls{ justify-content:space-between; }
   .control-selects{ flex:none; }
+  .control-selects .select{ flex:none; width:auto; min-width:132px; }
   .select{ width:auto; min-width:120px; }
 
   .chart-wrap{ height:300px; }
